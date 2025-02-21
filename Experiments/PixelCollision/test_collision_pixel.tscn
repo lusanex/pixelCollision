@@ -1,0 +1,72 @@
+[gd_scene load_steps=8 format=3 uid="uid://dh4m4osgpr3v3"]
+
+[ext_resource type="Shader" uid="uid://bjerrj6mpf5st" path="res://Experiments/PixelCollision/collision_pixel.gdshader" id="1_1tyoa"]
+[ext_resource type="Script" uid="uid://dq1ekegg0m1vm" path="res://Experiments/PixelCollision/test_collision_pixel.gd" id="1_2jksl"]
+[ext_resource type="Texture2D" uid="uid://pigfofl5dmc7" path="res://Assets/island.png" id="3_jnccg"]
+[ext_resource type="Script" uid="uid://crpriejm1jox0" path="res://Experiments/PixelCollision/collision_pixel.gd" id="4_elatn"]
+[ext_resource type="Texture2D" uid="uid://cp8ua636m0437" path="res://Assets/Tiles (Grayscale)/tile_0035.png" id="5_yfp8d"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nb6nk"]
+shader = ExtResource("1_1tyoa")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aa454"]
+shader = ExtResource("1_1tyoa")
+
+[node name="TestCollisionPixel" type="Node2D"]
+script = ExtResource("1_2jksl")
+
+[node name="MaskTexture" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_nb6nk")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -40.0
+offset_right = 120.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_jnccg")
+
+[node name="ColorTexture" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_aa454")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -40.0
+offset_right = 120.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_jnccg")
+script = ExtResource("4_elatn")
+
+[node name="DebugTexture" type="TextureRect" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="cursor" type="Sprite2D" parent="."]
+position = Vector2(30, -118)
+texture = ExtResource("5_yfp8d")
+
+[node name="mask" type="Sprite2D" parent="."]
+texture_filter = 1
+
+[connection signal="mouse_entered" from="ColorTexture" to="ColorTexture" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="ColorTexture" to="ColorTexture" method="_on_mouse_exited"]

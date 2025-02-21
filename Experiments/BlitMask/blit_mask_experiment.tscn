@@ -1,0 +1,30 @@
+[gd_scene load_steps=8 format=3 uid="uid://bsv2vqeqejyfb"]
+
+[ext_resource type="Script" uid="uid://4ye2q2vrkcdi" path="res://Experiments/BlitMask/blit_mask_experiment.gd" id="1_0ghb2"]
+[ext_resource type="Shader" uid="uid://bjerrj6mpf5st" path="res://Experiments/PixelCollision/collision_pixel.gdshader" id="2_laeei"]
+[ext_resource type="Texture2D" uid="uid://pigfofl5dmc7" path="res://Assets/island.png" id="2_o4j4d"]
+[ext_resource type="Script" uid="uid://c7xl7c115a3du" path="res://Experiments/PixelCollision/debug_grid_collision.gd" id="4_a35mc"]
+[ext_resource type="Script" uid="uid://6feunpl4jd5l" path="res://Experiments/BlitMask/camera_2d.gd" id="5_rswgg"]
+[ext_resource type="Texture2D" uid="uid://cdwtle0u08b4d" path="res://Assets/brush_1.png" id="6_vo1de"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2p5c7"]
+shader = ExtResource("2_laeei")
+
+[node name="BlitMaskExperiment" type="Node2D"]
+script = ExtResource("1_0ghb2")
+
+[node name="Island" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_2p5c7")
+texture = ExtResource("2_o4j4d")
+
+[node name="DebugRects" type="Sprite2D" parent="."]
+script = ExtResource("4_a35mc")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+scale = Vector2(2.185, 2.185)
+script = ExtResource("5_rswgg")
+zoom_min = 0.975
+zoom_max = 4.34
+
+[node name="BrushPointer" type="Sprite2D" parent="."]
+texture = ExtResource("6_vo1de")
