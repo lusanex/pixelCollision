@@ -3,9 +3,9 @@ extends TextureRect
 @onready var tex: TextureRect = $"../TextureRect2"
 
 var cell_size: int = 32
-var grid: Array[Rect2i]
+var grid: Dictionary
 var is_mouse_in : bool = false
-
+var affected_cells
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	var new_image : Image = resize_and_center_image(texture.get_image())
@@ -16,12 +16,12 @@ func _ready() -> void:
 	texture = image_tex
 	#tex.texture = image_tex
 	grid = divide_into_grid(new_image.get_size(),cell_size )
-	print(grid)
+	#print(grid)
 
 func _draw() -> void:
 	# Iterate over each grid cell
-	for row in range(grid.size()):
-		var rect = grid[row]
+	for key in grid.keys():
+		var rect = grid[key]
 
 		# Calculate the color based on the position of the cell
 		var is_red = (rect.position.x / cell_size + rect.position.y / cell_size) % 2 == 0
@@ -31,7 +31,9 @@ func _draw() -> void:
 		
 		# Draw the rectangle with the alternating colors
 		draw_rect(rect, cell_color, false)
-
+	if affected_cells:
+		for key in affected_cells.keys():
+			draw_circle(affected_cells[key].diagonal_end_point,1,Color.RED)
 
 
 func _process(delta: float) -> void:
@@ -40,16 +42,26 @@ func _process(delta: float) -> void:
 	if is_mouse_in:
 		# Get the mouse position relative to the TextureRect
 		var mouse_pos = get_local_mouse_position()
-		
+		#print(mouse_pos)
 		# Get the actual mouse position in the texture (integer values)
 		var actual_mouse_pos = Vector2(int(mouse_pos.x), int(mouse_pos.y))
 
 		# Print the actual mouse position in pixels
 		#print(size)
-		#print(get_grid_position(actual_mouse_pos,size))
+		affected_cells = get_affected_cells(mouse_pos,Vector2(16,16))
+		#print(affected_cells)
+		var rects = calculate_brush_rects(affected_cells,Vector2(16,16))
+		#var rects = calculate_bounding_rect(affected_cells)
+		#print(rects)
+		queue_redraw()
+		#print(get_grid_position(actual_mouse_pos))
 
-func get_grid_position(mouse_pos: Vector2, image_size: Vector2) -> Vector2i:
+func get_grid_position(mouse_pos: Vector2, image_size: Vector2 = size) -> Vector2i:
+	#print(size)
 	# Calculate the grid position by dividing the mouse position by the cell size for both x and y
+	if mouse_pos.x < 0 or mouse_pos.y < 0 or mouse_pos.x >= image_size.x or mouse_pos.y >= image_size.y:
+		return Vector2i(-1, -1)  # Indicate out-of-bounds
+	
 	var grid_pos = Vector2i(
 		int(mouse_pos.x / cell_size),
 		int(mouse_pos.y / cell_size)
@@ -57,15 +69,72 @@ func get_grid_position(mouse_pos: Vector2, image_size: Vector2) -> Vector2i:
 	
 	# Return the grid coordinates as a Vector2i (grid_pos)
 	return grid_pos
+
+
+func get_affected_cells(center: Vector2, used_size: Vector2) -> Dictionary:
+	var affected_regions: Dictionary = {}
+	var diagonal_range = used_size / 2  # Half the size for max diagonal reach
+
+	# Define diagonal directions
+	var diagonal_directions = {
+		"top_left": Vector2(-diagonal_range.x, -diagonal_range.y),
+		"top_right": Vector2(diagonal_range.x, -diagonal_range.y),
+		"bottom_left": Vector2(-diagonal_range.x, diagonal_range.y),
+		"bottom_right": Vector2(diagonal_range.x, diagonal_range.y)
+	}
+	
+	# Iterate over each diagonal direction
+	for key in diagonal_directions.keys():
+		var direction = diagonal_directions[key]
+		var check_pos = center + direction
+		var grid_pos = get_grid_position(check_pos)  # Convert to grid coordinates
+		if grid_pos == Vector2i(-1,-1): continue
+		# Store the result (grid_pos is -1,-1 if out of bounds)
+		affected_regions[key] = {
+			"grid_pos": grid_pos,
+			"diagonal_end_point": check_pos,
+			"region_type": key,
+		}
+
+	# Debugging
+	#print(affected_regions)
+	
+	return affected_regions
+
+func calculate_brush_rects(affected_regions: Dictionary, brush_size: Vector2):
+	
+	# Get the first key in the dictionary
+	var first_key = affected_regions.keys()[0]  # Get the first key
+	var first_entry = affected_regions[first_key]  # Get the corresponding value
+	
+	# Extract values
+	var pos = first_entry.grid_pos
+	var diagonal_end_point = first_entry.diagonal_end_point
+	#print("region ? ", first_entry.region_type)
+	#print("First Key:", first_key)
+	#print("Grid Position:", pos)
+
+	# Get the rect at this grid position from your grid dictionary
+	var rect_at_pos = grid.get(pos, null)  # Use .get() to avoid errors if pos is missing
+	if rect_at_pos == null:
+		print("Grid position not found in grid dictionary!")
+		return
+
+	print("Rect at Grid Position:", rect_at_pos)
+
+	# Convert the diagonal end point to local space within the rect
+	var to_local_rect = Vector2i(diagonal_end_point) - rect_at_pos.position
+	print("To Local Rect:", to_local_rect)
+
 	
 	
-func divide_into_grid(image_size: Vector2, cell_size: int) -> Array[Rect2i]:
+func divide_into_grid(image_size: Vector2, cell_size: int) -> Dictionary:
 	# Calculate the number of cells in each dimension (rows and columns)
 	var cols = int(image_size.x / cell_size)
 	var rows = int(image_size.y / cell_size)
 
 	# Array to store the grid rects
-	var grid_rects: Array[Rect2i] = []
+	var grid_rects: Dictionary = {}
 
 	# Iterate through the rows and columns to create the grid
 	for row in range(rows):
@@ -91,7 +160,7 @@ func divide_into_grid(image_size: Vector2, cell_size: int) -> Array[Rect2i]:
 
 			# Create the Rect2i with the adjusted position and size
 			var rect = Rect2i(rect_position, Vector2(rect_width, rect_height))
-			grid_rects.append(rect)
+			grid_rects[Vector2i(col,row)] = rect
 
 	# Return the array of grid rects
 	return grid_rects
