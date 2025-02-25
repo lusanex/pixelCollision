@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://c4r0t2d8fubci"]
+
+[ext_resource type="Texture2D" uid="uid://pigfofl5dmc7" path="res://Assets/island.png" id="1_rkanr"]
+[ext_resource type="Script" path="res://Experiments/PixelCollision/texture_rect_pixel_collision.gd" id="2_v6w1u"]
+
+[node name="RectPixelCollision" type="Node2D"]
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_right = 240.0
+offset_bottom = 80.0
+texture = ExtResource("1_rkanr")
+script = ExtResource("2_v6w1u")
+
+[node name="TextureRect2" type="TextureRect" parent="."]
+visible = false
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[connection signal="mouse_entered" from="TextureRect" to="TextureRect" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="TextureRect" to="TextureRect" method="_on_mouse_exited"]
